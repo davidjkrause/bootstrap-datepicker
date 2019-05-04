@@ -271,7 +271,17 @@
 					o.endDate = Infinity;
 				}
 			}
-
+			if (o.todayDate !== -Infinity) {
+				if (!!o.todayDate) {
+					if (o.todayDate instanceof Date)
+						o.todayDate = this._local_to_utc(this._zero_time(o.todayDate));
+					else
+						o.todayDate = DPGlobal.parseDate(o.todayDate, format, o.language, o.assumeNearbyYear);
+				}
+				else {
+					o.todayDate = -Infinity;
+				}
+			}
 			o.daysOfWeekDisabled = this._resolveDaysOfWeek(o.daysOfWeekDisabled||[]);
 			o.daysOfWeekHighlighted = this._resolveDaysOfWeek(o.daysOfWeekHighlighted||[]);
 
@@ -322,7 +332,7 @@
 				var day = o.defaultViewDate.day || 1;
 				o.defaultViewDate = UTCDate(year, month, day);
 			} else {
-				o.defaultViewDate = UTCToday();
+				o.defaultViewDate = this._getToday();
 			}
 		},
 		_applyEvents: function(evs){
@@ -868,7 +878,7 @@
 			var cls = [],
 				year = this.viewDate.getUTCFullYear(),
 				month = this.viewDate.getUTCMonth(),
-				today = UTCToday();
+				today = this._getToday();
 			if (date.getUTCFullYear() < year || (date.getUTCFullYear() === year && date.getUTCMonth() < month)){
 				cls.push('old');
 			} else if (date.getUTCFullYear() > year || (date.getUTCFullYear() === year && date.getUTCMonth() > month)){
@@ -1194,7 +1204,7 @@
 			// Clicked on today button
 			if (target.hasClass('today') && !target.hasClass('day')){
 				this.setViewMode(0);
-				this._setDate(UTCToday(), this.o.todayBtn === 'linked' ? null : 'view');
+				this._setDate(this._getToday(), this.o.todayBtn === 'linked' ? null : 'view');
 			}
 
 			// Clicked on clear button
@@ -1304,6 +1314,14 @@
 			this.inputField.trigger('change');
 			if (this.o.autoclose && (!which || which === 'date')){
 				this.hide();
+			}
+		},
+
+		_getToday: function(){
+			if (this.o.todayDate !== -Infinity) {
+				return this.o.todayDate;
+			} else {
+				return UTCToday();
 			}
 		},
 
@@ -1713,6 +1731,7 @@
 		startDate: -Infinity,
 		startView: 0,
 		todayBtn: false,
+        todayDate: -Infinity,
 		todayHighlight: false,
 		updateViewDate: true,
 		weekStart: 0,
